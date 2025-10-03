@@ -1,18 +1,11 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <div class="theme-toggle">
-        <label>
-          <input type="checkbox" v-model="isDark" @change="toggleTheme" />
-          Тёмная тема
-        </label>
-      </div>
-
       <h2>{{ isLogin ? 'Вход' : 'Регистрация' }}</h2>
 
       <form @submit.prevent="handleSubmit">
-        <input v-model="form.username" placeholder="Имя пользователя" :class="{ error: errors.username }" />
-        <input v-model="form.password" type="password" placeholder="Пароль" :class="{ error: errors.password }" />
+        <input v-model="form.username" placeholder="Имя пользователя" />
+        <input v-model="form.password" type="password" placeholder="Пароль" />
         <button type="submit">{{ isLogin ? 'Войти' : 'Зарегистрироваться' }}</button>
       </form>
 
@@ -26,43 +19,25 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
 
 const isLogin = ref(true)
-const isDark = ref(false)
 const form = ref({ username: '', password: '' })
-const errors = ref<{ username?: boolean; password?: boolean }>({})
 const message = ref('')
-
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme')
-  if (savedTheme === 'dark') {
-    isDark.value = true
-    document.documentElement.setAttribute('data-theme', 'dark')
-  }
-})
-
-function toggleTheme() {
-  isDark.value = !isDark.value
-  const theme = isDark.value ? 'dark' : 'light'
-  document.documentElement.setAttribute('data-theme', theme)
-  localStorage.setItem('theme', theme)
-}
 
 function toggleMode() {
   isLogin.value = !isLogin.value
   form.value.username = ''
   form.value.password = ''
-  errors.value = {}
   message.value = ''
 }
 
 async function handleSubmit() {
-  errors.value = {}
-  if (!form.value.username) errors.value.username = true
-  if (!form.value.password) errors.value.password = true
-  if (Object.keys(errors.value).length) return
+  if (!form.value.username || !form.value.password) {
+    message.value = 'Заполните все поля'
+    return
+  }
 
   const endpoint = isLogin.value ? '/api/auth/login' : '/api/auth/signup'
   try {
@@ -72,11 +47,7 @@ async function handleSubmit() {
       body: JSON.stringify(form.value)
     })
     const data = await res.json()
-    if (!res.ok) {
-      message.value = data.error || 'Ошибка авторизации'
-    } else {
-      message.value = 'Успешно!'
-    }
+    message.value = res.ok ? 'Успешно!' : data.error || 'Ошибка'
   } catch {
     message.value = 'Ошибка сети'
   }
@@ -89,104 +60,80 @@ async function handleSubmit() {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 1rem;
-  background: var(--bg-color);
-  transition: background 0.3s ease;
+  padding: 2rem;
+  background: #ffffff;
+  font-family: system-ui, sans-serif;
 }
 
 .auth-box {
-  background: var(--box-bg);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+  padding: 2rem;
   box-sizing: border-box;
-  color: var(--text-color);
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-.theme-toggle {
-  text-align: right;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
 }
 
 h2 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
   text-align: center;
+  color: #111827;
 }
 
 form {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
 }
 
 input {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  font-size: 1rem;
-  border: 1px solid var(--input-border);
+  font-size: 1.125rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  transition: background 0.3s ease, color 0.3s ease;
+  background: #f9fafb;
+  color: #111827;
 }
 
-input.error {
-  border-color: red;
+input::placeholder {
+  color: #9ca3af;
+}
+
+input:focus {
+  outline: none;
+  border-color: #d1d5db;
 }
 
 button {
-  padding: 0.75rem;
-  font-size: 1rem;
-  background: var(--button-bg);
-  color: white;
-  border: none;
+  font-size: 1.125rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
+  background: #f9fafb;
+  color: #111827;
   cursor: pointer;
-  transition: background 0.2s ease;
 }
 
 button:hover {
-  background: var(--button-hover);
+  background: #f3f4f6;
 }
 
 .toggle {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  color: #6b7280;
 }
 
 .toggle a {
-  color: var(--button-bg);
   cursor: pointer;
-  margin-left: 0.25rem;
   text-decoration: underline;
 }
 
 .message {
   margin-top: 1rem;
   text-align: center;
-  font-size: 0.95rem;
-  color: var(--text-color);
-}
-
-@media (max-width: 600px) {
-  .auth-box {
-    padding: 1.5rem;
-    border-radius: 8px;
-  }
-
-  input,
-  button {
-    font-size: 0.95rem;
-    padding: 0.65rem;
-  }
-
-  h2 {
-    font-size: 1.25rem;
-  }
+  font-size: 1rem;
+  color: #111827;
 }
 </style>

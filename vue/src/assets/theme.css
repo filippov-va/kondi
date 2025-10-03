@@ -1,0 +1,19 @@
+:root {
+  --bg-color: #f5f5f5;
+  --box-bg: #ffffff;
+  --text-color: #333;
+  --input-bg: #fff;
+  --input-border: #ccc;
+  --button-bg: #42b983;
+  --button-hover: #369870;
+}
+
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --box-bg: #1e1e1e;
+  --text-color: #eee;
+  --input-bg: #2a2a2a;
+  --input-border: #555;
+  --button-bg: #42b983;
+  --button-hover: #2f8e6e;
+}
